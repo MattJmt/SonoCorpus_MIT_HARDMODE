@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import signal
+import socket
 import sys
 import time
 from collections import deque
@@ -31,6 +32,8 @@ EXPECTED_HEADER = "\t".join(CHANNEL_NAMES)
 DEFAULT_BAUD = 115200
 DEFAULT_RECONNECT_SEC = 1.0
 DEFAULT_EMA_ALPHA = 0.2
+UDP_HOST = "127.0.0.1"
+UDP_PORT = 6969
 
 
 @dataclass
@@ -267,8 +270,11 @@ def main() -> int:
     print(f"Loaded model: {args.checkpoint}")
     print(f"Device: {device}")
     print(f"Window: {window}, Threshold: {threshold:.3f}, EMA alpha: {ema_alpha:.3f}")
+    print(f"UDP confidence stream: {UDP_HOST}:{UDP_PORT}")
 
     ui = FingerSquaresUI()
+    udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_addr = (UDP_HOST, UDP_PORT)
     stop = False
 
     def _handle_sigint(_sig: int, _frame: object) -> None:
@@ -343,6 +349,15 @@ def main() -> int:
                             logits = model(xt)
                             probs = torch.sigmoid(logits).squeeze(0).cpu().numpy()
 
+                        udp_values = (
+                            round(float(probs[FINGERS.index("thumb")]), 2),
+                            round(float(probs[FINGERS.index("index")]), 2),
+                            round(float(probs[FINGERS.index("middle")]), 2),
+                            round(float(probs[FINGERS.index("ring")]), 2),
+                        )
+                        payload = " ".join(f"{v:.2f}" for v in udp_values)
+                        udp_sock.sendto(payload.encode("utf-8"), udp_addr)
+
                         active = probs >= threshold
                         ui.update(active=active, probs=probs)
 
@@ -356,6 +371,7 @@ def main() -> int:
                 time.sleep(args.reconnect_sec)
                 continue
     finally:
+        udp_sock.close()
         plt.close("all")
 
     return 0
