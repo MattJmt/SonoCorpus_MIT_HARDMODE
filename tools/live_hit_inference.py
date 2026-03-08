@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import argparse
 import signal
-import socket
 import sys
 import time
 from collections import deque
@@ -23,6 +22,7 @@ import numpy as np
 import serial
 import torch
 from matplotlib.patches import Rectangle
+from pythonosc.udp_client import SimpleUDPClient
 from serial.tools import list_ports
 
 from train_hit_classifier import FINGERS, HitConvNet
@@ -34,6 +34,7 @@ DEFAULT_RECONNECT_SEC = 1.0
 DEFAULT_EMA_ALPHA = 0.2
 UDP_HOST = "127.0.0.1"
 UDP_PORT = 6969
+OSC_ADDRESS = "/glove"
 
 
 @dataclass
@@ -84,6 +85,9 @@ def parse_args() -> argparse.Namespace:
         default="auto",
         help="Inference device selection",
     )
+    p.add_argument("--udp-host", default=UDP_HOST, help="OSC UDP destination host.")
+    p.add_argument("--udp-port", type=int, default=UDP_PORT, help="OSC UDP destination port.")
+    p.add_argument("--osc-address", default=OSC_ADDRESS, help="OSC address path.")
     return p.parse_args()
 
 
@@ -253,6 +257,12 @@ def main() -> int:
     if args.reconnect_sec <= 0:
         print("Error: --reconnect-sec must be > 0", file=sys.stderr)
         return 2
+    if args.udp_port <= 0 or args.udp_port > 65535:
+        print("Error: --udp-port must be in [1, 65535]", file=sys.stderr)
+        return 2
+    if not args.osc_address.startswith("/"):
+        print("Error: --osc-address must start with '/'", file=sys.stderr)
+        return 2
 
     device = choose_device(args.device)
     model, meta = load_model(args.checkpoint, device)
@@ -270,11 +280,10 @@ def main() -> int:
     print(f"Loaded model: {args.checkpoint}")
     print(f"Device: {device}")
     print(f"Window: {window}, Threshold: {threshold:.3f}, EMA alpha: {ema_alpha:.3f}")
-    print(f"UDP confidence stream: {UDP_HOST}:{UDP_PORT}")
+    print(f"OSC confidence stream: {args.udp_host}:{args.udp_port} {args.osc_address}")
 
     ui = FingerSquaresUI()
-    udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udp_addr = (UDP_HOST, UDP_PORT)
+    osc_client = SimpleUDPClient(args.udp_host, args.udp_port)
     stop = False
 
     def _handle_sigint(_sig: int, _frame: object) -> None:
@@ -349,14 +358,13 @@ def main() -> int:
                             logits = model(xt)
                             probs = torch.sigmoid(logits).squeeze(0).cpu().numpy()
 
-                        udp_values = (
+                        osc_values = (
                             round(float(probs[FINGERS.index("thumb")]), 2),
                             round(float(probs[FINGERS.index("index")]), 2),
                             round(float(probs[FINGERS.index("middle")]), 2),
                             round(float(probs[FINGERS.index("ring")]), 2),
                         )
-                        payload = " ".join(f"{v:.2f}" for v in udp_values)
-                        udp_sock.sendto(payload.encode("utf-8"), udp_addr)
+                        osc_client.send_message(args.osc_address, list(osc_values))
 
                         active = probs >= threshold
                         ui.update(active=active, probs=probs)
@@ -371,7 +379,6 @@ def main() -> int:
                 time.sleep(args.reconnect_sec)
                 continue
     finally:
-        udp_sock.close()
         plt.close("all")
 
     return 0
