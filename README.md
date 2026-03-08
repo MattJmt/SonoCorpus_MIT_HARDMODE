@@ -5,7 +5,10 @@ Python serial collector and live plotter for glove piezo data.
 ## Install dependencies
 
 ```bash
-python3 -m pip install pyserial matplotlib
+python3 -m venv .venv
+source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
 ```
 
 ## Arduino serial format

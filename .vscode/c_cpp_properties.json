@@ -1,0 +1,60 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
+{
+    "configurations": [
+        {
+            "name": "PlatformIO",
+            "includePath": [
+                "/Users/sebastianmonzon/Documents/PlatformIO/Projects/SonoCorpus/include",
+                "/Users/sebastianmonzon/Documents/PlatformIO/Projects/SonoCorpus/src",
+                "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/variants/sparkfun_promicro",
+                "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "/Users/sebastianmonzon/Documents/PlatformIO/Projects/SonoCorpus/include",
+                    "/Users/sebastianmonzon/Documents/PlatformIO/Projects/SonoCorpus/src",
+                    "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/variants/sparkfun_promicro",
+                    "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    "/Users/sebastianmonzon/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=60119",
+                "ARDUINO_AVR_PROMICRO16",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "USB_VID=0x1B4F",
+                "USB_PID=0x9206",
+                "USB_PRODUCT=\"SparkFun Pro Micro\"",
+                "USB_MANUFACTURER=\"SparkFun\"",
+                "__AVR_ATmega32U4__",
+                ""
+            ],
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++11",
+            "compilerPath": "/Users/sebastianmonzon/.platformio/packages/toolchain-atmelavr/bin/avr-gcc",
+            "compilerArgs": [
+                "-mmcu=atmega32u4",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}
