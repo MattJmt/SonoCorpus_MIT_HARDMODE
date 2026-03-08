@@ -4,14 +4,16 @@ import threading
 import time
 import numpy as np
 from pythonosc import udp_client
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 HOST = '127.0.0.1'
 PORT = 8888
 
 GRAVITY_ALPHA = 0.98
-TAP_THRESHOLD = [5000, 5000, 4500, 4000]  # per-IMU (index=thumb, middle, ring, pinky-side)
+TAP_THRESHOLD = [5000, 5000, 4800, 3500]  # per-IMU (index=thumb, middle, ring, pinky-side)
 TAP_COOLDOWN_SAMPLES = 5   # samples to ignore after a tap (per-IMU)
-TAP_GLOBAL_LOCKOUT = 0     # samples all other IMUs are suppressed after any tap
+TAP_GLOBAL_LOCKOUT = 3   #3  # samples all other IMUs are suppressed after any tap
 
 # --- OSC UDP output ---
 TARGET_IP  = "10.29.145.118"  # replace with receiver's IP
@@ -101,4 +103,47 @@ def read_data():
 
 thread = threading.Thread(target=read_data, daemon=True)
 thread.start()
-thread.join()
+
+# --- Tap indicator plot ---
+TAP_DISPLAY_DURATION = 0.01   # seconds the tile stays lit after a tap
+tap_active   = [False] * 4
+tap_lit_time = [0.0]   * 4
+
+fig, ax = plt.subplots(figsize=(6, 2))
+ax.set_xlim(0, 4)
+ax.set_ylim(0, 1)
+ax.axis('off')
+fig.patch.set_facecolor('#111111')
+
+squares = []
+labels  = []
+for i in range(4):
+    x    = i + 0.1
+    rect = plt.Rectangle((x, 0.1), 0.8, 0.8,
+                          facecolor='#222222', edgecolor='white', linewidth=2)
+    ax.add_patch(rect)
+    squares.append(rect)
+    txt = ax.text(x + 0.4, 0.5, str(i),
+                  ha='center', va='center',
+                  fontsize=28, fontweight='bold', color='white')
+    labels.append(txt)
+
+def update(frame):
+    now = time.time()
+    for i in range(4):
+        if tap_flash[i] > 0 and not tap_active[i]:
+            tap_active[i]   = True
+            tap_lit_time[i] = now
+        if tap_active[i]:
+            squares[i].set_facecolor('#00FF88')
+            labels[i].set_color('black')
+            if now - tap_lit_time[i] > TAP_DISPLAY_DURATION:
+                tap_active[i] = False
+        else:
+            squares[i].set_facecolor('#222222')
+            labels[i].set_color('white')
+    return squares + labels
+
+ani = animation.FuncAnimation(fig, update, interval=30, blit=False, cache_frame_data=False)
+plt.tight_layout()
+plt.show()
