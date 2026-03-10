@@ -1,4 +1,4 @@
-# BioBeats 🫀🎼
+# BioBeats 🫀🎧
 
 Python serial collector and live plotter for glove piezo data.
 
