@@ -1,0 +1,3 @@
+[submodule "musicgen/ACE-Step-1.5"]
+	path = musicgen/ACE-Step-1.5
+	url = https://github.com/ACE-Step/ACE-Step-1.5.git

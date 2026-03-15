@@ -1,0 +1,14 @@
+[Unit]
+Description=ACE-Step Music Generation API
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/%u/.local/bin/uv run --project %h/ACE-Step-1.5 acestep-api --host 127.0.0.1 --port 8001
+Restart=always
+RestartSec=10
+Environment=PYTORCH_ALLOC_CONF=expandable_segments:True
+Environment=PATH=/home/%u/.local/bin:/home/%u/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+[Install]
+WantedBy=default.target
